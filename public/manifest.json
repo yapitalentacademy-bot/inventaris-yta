@@ -1,0 +1,22 @@
+{
+  "name": "Inventaris PT YAPI Talent Academy",
+  "short_name": "Inventaris YTA",
+  "description": "Aplikasi Manajeman Inventaris & QR Code Label PT YAPI Talent Academy",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F5132",
+  "theme_color": "#0F5132",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=192&auto=format&fit=crop",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=512&auto=format&fit=crop",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

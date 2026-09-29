@@ -1,0 +1,161 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  PETUGAS
+  PIMPINAN
+}
+
+enum Condition {
+  BAIK
+  RUSAK_RINGAN
+  RUSAK_BERAT
+}
+
+enum Status {
+  TERSEDIA
+  DIPINJAM
+  DALAM_PERBAIKAN
+  HILANG
+  DIHAPUSKAN
+}
+
+enum AcquisitionSource {
+  PEMBELIAN
+  HIBAH
+  LAINNYA
+}
+
+model User {
+  id            String         @id @default(cuid())
+  name          String
+  email         String         @unique
+  password      String
+  role          Role           @default(PETUGAS)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  itemsCreated  Item[]         @relation("ItemCreatedBy")
+  itemsUpdated  Item[]         @relation("ItemUpdatedBy")
+  historyLogs   ItemHistory[]
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  items       Item[]
+}
+
+model Location {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  type        String?  // Ruang, Lemari, Gudang
+  description String?
+  createdAt   DateTime @default(now())
+  items       Item[]
+}
+
+model Unit {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  items     Item[]
+}
+
+model PersonInCharge {
+  id        String   @id @default(cuid())
+  name      String
+  division  String?
+  createdAt DateTime @default(now())
+  items     Item[]
+}
+
+model ItemSequence {
+  id        Int      @id @default(1)
+  lastNum   Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
+
+model Item {
+  id                String            @id @default(cuid())
+  code              String            @unique
+  codeSeq           Int               @unique
+  name              String
+  categoryId        String
+  category          Category          @relation(fields: [categoryId], references: [id])
+  brandModel        String?
+  serialNumber      String?
+  specification     String?
+  quantity          Int               @default(1)
+  unitId            String
+  unit              Unit              @relation(fields: [unitId], references: [id])
+  locationId        String
+  location          Location          @relation(fields: [locationId], references: [id])
+  picId             String?
+  pic               PersonInCharge?   @relation(fields: [picId], references: [id])
+  condition         Condition         @default(BAIK)
+  status            Status            @default(TERSEDIA)
+  acquisitionDate   DateTime?
+  acquisitionSource AcquisitionSource @default(PEMBELIAN)
+  acquisitionPrice  Decimal?
+  warrantyExpiry    DateTime?
+  notes             String?
+  
+  isDeleted         Boolean           @default(false)
+  deletedAt         DateTime?
+  
+  createdById       String
+  createdBy         User              @relation("ItemCreatedBy", fields: [createdById], references: [id])
+  updatedById       String
+  updatedBy         User              @relation("ItemUpdatedBy", fields: [updatedById], references: [id])
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  photos            ItemPhoto[]
+  history           ItemHistory[]
+
+  @@index([code])
+  @@index([name])
+  @@index([categoryId])
+  @@index([locationId])
+  @@index([status])
+}
+
+model ItemPhoto {
+  id        String   @id @default(cuid())
+  itemId    String
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  url       String
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model ItemHistory {
+  id        String   @id @default(cuid())
+  itemId    String
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String   // TAMBAH, EDIT, PINJAM, KEMBALI, PINDAH_LOKASI, UBAH_KONDISI, DIHAPUSKAN
+  details   String
+  createdAt DateTime @default(now())
+}
+
+model PublicSetting {
+  id          String   @id @default("default")
+  showBrand   Boolean  @default(true)
+  showSpec    Boolean  @default(true)
+  showPic     Boolean  @default(false)
+  showPrice   Boolean  @default(false)
+  showHistory Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+}
