@@ -1,5 +1,5 @@
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -7,38 +7,12 @@ generator client {
   provider = "prisma-client-js"
 }
 
-enum Role {
-  ADMIN
-  PETUGAS
-  PIMPINAN
-}
-
-enum Condition {
-  BAIK
-  RUSAK_RINGAN
-  RUSAK_BERAT
-}
-
-enum Status {
-  TERSEDIA
-  DIPINJAM
-  DALAM_PERBAIKAN
-  HILANG
-  DIHAPUSKAN
-}
-
-enum AcquisitionSource {
-  PEMBELIAN
-  HIBAH
-  LAINNYA
-}
-
 model User {
   id            String         @id @default(cuid())
   name          String
   email         String         @unique
   password      String
-  role          Role           @default(PETUGAS)
+  role          String         @default("PETUGAS")
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   itemsCreated  Item[]         @relation("ItemCreatedBy")
@@ -101,11 +75,11 @@ model Item {
   location          Location          @relation(fields: [locationId], references: [id])
   picId             String?
   pic               PersonInCharge?   @relation(fields: [picId], references: [id])
-  condition         Condition         @default(BAIK)
-  status            Status            @default(TERSEDIA)
+  condition         String            @default("BAIK")
+  status            String            @default("TERSEDIA")
   acquisitionDate   DateTime?
-  acquisitionSource AcquisitionSource @default(PEMBELIAN)
-  acquisitionPrice  Decimal?
+  acquisitionSource String            @default("PEMBELIAN")
+  acquisitionPrice  Float?
   warrantyExpiry    DateTime?
   notes             String?
   

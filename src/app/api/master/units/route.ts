@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const units = await prisma.unit.findMany({ orderBy: { name: 'asc' } });
@@ -15,8 +17,9 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || (session.user as any).role !== 'ADMIN') {
-      return NextResponse.json({ success: false, error: 'Akses khusus Admin' }, { status: 403 });
+    const userRole = (session?.user as any)?.role;
+    if (!session || (userRole !== 'ADMIN' && userRole !== 'PETUGAS')) {
+      return NextResponse.json({ success: false, error: 'Akses ditolak' }, { status: 403 });
     }
 
     const { name } = await request.json();
